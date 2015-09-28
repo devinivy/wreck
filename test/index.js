@@ -29,6 +29,36 @@ var expect = Code.expect;
 
 describe('request()', function () {
 
+    it('requests a POST resource with JSON', function (done) {
+
+        var server = Http.createServer(function (req, res) {
+
+            expect(req.headers['content-type']).to.equal('application/json');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            req.pipe(res);
+        });
+
+        var requestPayload = {some: 'json'};
+
+        server.listen(0, function () {
+
+            Wreck.post('http://localhost:' + server.address().port, {
+                payload: JSON.stringify(requestPayload),
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                json: true
+            }, function (err, res, responsePayload) {
+
+                expect(err).to.not.exist();
+
+                expect(responsePayload).to.deep.equal(requestPayload);
+                server.close();
+                done();
+            });
+        });
+    });
+
     it('requests a resource with callback', function (done) {
 
         var server = Http.createServer(function (req, res) {
